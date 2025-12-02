@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  vote-app:
+    build: ./vote
+    ports:
+      - "5000:8080"
+    container_name: vote-container
+
+  result-app:
+    build: ./result
+    ports:
+      - "3000:8080"
+    container_name: result-container
+
+  worker-app:
+    build: ./worker
+    container_name: worker-container
+
+  
