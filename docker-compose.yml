@@ -8,14 +8,23 @@ services:
     container_name: vote-container
     depends_on:
       - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
 
   result-app:
     build: ./result
     ports:
-      - "3000:8080"
+      - "3000:8888"
     container_name: result-container
     depends_on:
       - db
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: votes_db
 
   worker-app:
     build: ./worker
@@ -23,6 +32,14 @@ services:
     depends_on:
       - db
       - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: votes_db
 
   redis:
     image: redis:alpine

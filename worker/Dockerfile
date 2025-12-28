@@ -7,4 +7,4 @@ COPY . .
 RUN dotnet restore
 RUN dotnet build -c Release
 
-CMD ["dotnet", "worker.dll"]
+CMD ["dotnet", "bin/Release/net7.0/Worker.dll"]
