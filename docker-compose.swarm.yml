@@ -15,12 +15,9 @@ services:
       - redis-data:/data
     networks:
       - backend
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   db:
     image: postgres:15-alpine
@@ -32,40 +29,28 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - backend
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: always
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   vote:
-    build: ./vote
+    image: vote:latest
     ports:
       - "8080:8080"
-    depends_on:
-      redis:
-        condition: service_healthy
     networks:
       - frontend
       - backend
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    restart: always
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
 
   worker:
-    build: ./worker
-    depends_on:
-      redis:
-        condition: service_healthy
-      db:
-        condition: service_healthy
+    image: worker:latest
     networks:
       - backend
     environment:
@@ -76,15 +61,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-    restart: always
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   result:
-    build: ./result
+    image: result:latest
     ports:
       - "8888:8888"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - frontend
       - backend
@@ -94,10 +79,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8888" ]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    restart: always
-
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
